@@ -1,0 +1,16 @@
+{
+  "README.md": {
+    "added": 2,
+    "removed": 2,
+    "commentsAdded": 0,
+    "commentsRemoved": 0,
+    "isTest": false
+  },
+  "src/service.py": {
+    "added": 5,
+    "removed": 1,
+    "commentsAdded": 4,
+    "commentsRemoved": 0,
+    "isTest": false
+  }
+}

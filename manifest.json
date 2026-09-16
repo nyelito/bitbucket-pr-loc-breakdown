@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Bitbucket PR LOC Breakdown",
+  "version": "0.1.0",
+  "description": "Breaks out added/removed lines in Bitbucket Cloud PRs: test files and comment lines shown separately.",
+  "minimum_chrome_version": "88",
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://bitbucket.org/*/pull-requests/*"],
+      "js": ["parser.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": ["https://bitbucket.org/*"]
+}

@@ -1,0 +1,9 @@
+{
+  "tests/auth.spec.ts": {
+    "added": 2,
+    "removed": 1,
+    "commentsAdded": 2,
+    "commentsRemoved": 0,
+    "isTest": true
+  }
+}

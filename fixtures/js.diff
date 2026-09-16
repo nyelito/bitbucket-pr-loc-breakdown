@@ -1,0 +1,13 @@
+diff --git a/src/util.js b/src/util.js
+index 1234567..abcdefg 100644
+--- a/src/util.js
++++ b/src/util.js
+@@ -1,8 +1,11 @@
+ const a = 1;
+-const old = true;
++// new star comment
++const b = a + 1;
++/* block comment start
++ * continues here
++ */
++const c = 3;
