@@ -4,6 +4,24 @@
     "removed": 1,
     "commentsAdded": 2,
     "commentsRemoved": 0,
-    "isTest": true
+    "isTest": true,
+    "isDoc": false
+  },
+  "summary": {
+    "fileCount": 1,
+    "testFileCount": 1,
+    "docFileCount": 0,
+    "added": 2,
+    "removed": 1,
+    "testAdded": 2,
+    "testRemoved": 1,
+    "docAdded": 0,
+    "docRemoved": 0,
+    "commentAdded": 0,
+    "commentRemoved": 0,
+    "testCommentAdded": 2,
+    "testCommentRemoved": 0,
+    "codeAdded": 0,
+    "codeRemoved": 0
   }
 }

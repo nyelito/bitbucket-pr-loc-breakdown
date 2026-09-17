@@ -28,11 +28,20 @@
 #${ROOT_ID} td:first-child,#${ROOT_ID} th:first-child{text-align:left;word-break:break-all;white-space:normal;}
 #${ROOT_ID} th{color:#5e6c84;font-weight:600;}
 #${ROOT_ID} .bb-tag{display:inline-block;font-size:10px;line-height:1;margin-left:6px;padding:2px 5px;border-radius:8px;background:#e0edfc;color:#0b57d0;font-weight:600;}
+#${ROOT_ID} .bb-tag-doc{background:#f5e2c8;color:#8a5606;}
 #${ROOT_ID} .bb-err{color:#c73a3a;}
 .bb-loc-badge{display:inline-block;margin-left:8px;font:600 10px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#33691e;background:#e8f5e9;border-radius:8px;padding:0 6px;white-space:nowrap;pointer-events:none;vertical-align:middle;}
 .bb-loc-inline{display:inline-block;margin-left:10px;font:600 11px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#4a5f7a;background:#fff;border:1px dashed #b3bfce;border-radius:10px;padding:1px 8px;white-space:nowrap;vertical-align:middle;}
 .bb-loc-inline .bb-add{color:#1b7f1b;}
 .bb-loc-inline .bb-del{color:#c73a3a;}
+.bb-bar{margin-top:10px;}
+.bb-bar-row{display:flex;height:9px;border-radius:5px;overflow:hidden;background:#dfe3e8;}
+.bb-seg-test{background:#1b7f1b;} .bb-seg-doc{background:#c26b08;} .bb-seg-cmt{background:#0b57d0;} .bb-seg-code{background:#42526e;}
+.bb-bar-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:#5e6c84;}
+.bb-bar-item{display:inline-flex;align-items:center;gap:4px;}
+.bb-bar-dot{display:inline-block;width:8px;height:8px;border-radius:2px;}
+.bb-bar-dot.bb-seg-test{background:#1b7f1b;} .bb-bar-dot.bb-seg-doc{background:#c26b08;} .bb-bar-dot.bb-seg-cmt{background:#0b57d0;} .bb-bar-dot.bb-seg-code{background:#42526e;}
+.bb-bar-empty{font-size:11px;color:#5e6c84;}
 `;
 
   let lastData = null;
@@ -103,27 +112,8 @@
   }
 
   function buildSummary(files) {
-    let added = 0, removed = 0, cAdded = 0, cRemoved = 0;
-    let tCount = 0, tAdded = 0, tRemoved = 0, tcAdded = 0, tcRemoved = 0;
-    for (const f of files) {
-      added += f.added; removed += f.removed;
-      cAdded += f.commentsAdded; cRemoved += f.commentsRemoved;
-      if (f.isTest) {
-        tCount++;
-        tAdded += f.added; tRemoved += f.removed;
-        tcAdded += f.commentsAdded; tcRemoved += f.commentsRemoved;
-      }
-    }
-    return {
-      files,
-      fileCount: files.length,
-      testFileCount: tCount,
-      added, removed,
-      commentsAdded: cAdded, commentsRemoved: cRemoved,
-      testAdded: tAdded, testRemoved: tRemoved,
-      testCommentsAdded: tcAdded, testCommentsRemoved: tcRemoved,
-      fetchedAt: Date.now()
-    };
+    const s = P.summarize(files);
+    return Object.assign(s, { files: files, fetchedAt: Date.now() });
   }
 
   async function loadData(loc, force) {
@@ -170,6 +160,40 @@
     return document.querySelector('[role="main"], main, #content') || document.body;
   }
 
+  function barGraph(data) {
+    const total = data.added;
+    const frac = (n) => (total ? n / total : 0);
+    const segs = [
+      { key: 'test', label: 'tests', value: data.testAdded, cls: 'bb-seg-test' },
+      { key: 'doc', label: 'docs', value: data.docAdded, cls: 'bb-seg-doc' },
+      { key: 'cmt', label: 'comments', value: data.commentAdded, cls: 'bb-seg-cmt' },
+      { key: 'code', label: 'code', value: data.codeAdded, cls: 'bb-seg-code' }
+    ];
+    const wrap = el('div', 'bb-bar');
+    if (!total) {
+      wrap.appendChild(el('div', 'bb-bar-empty', 'No added lines'));
+      return wrap;
+    }
+    const bar = el('div', 'bb-bar-row');
+    for (const s of segs) {
+      const part = el('div', s.cls);
+      const d = total ? (s.value / total) * 100 : 0;
+      part.style.width = d.toFixed(2) + '%';
+      if (d > 0) part.title = s.label + ' ' + Math.round(d) + '%';
+      bar.appendChild(part);
+    }
+    wrap.appendChild(bar);
+    const legend = el('div', 'bb-bar-legend');
+    for (const s of segs) {
+      const item = el('span', 'bb-bar-item');
+      item.appendChild(el('span', 'bb-bar-dot ' + s.cls));
+      item.appendChild(el('span', 'bb-bar-label', s.label + ' ' + Math.round(frac(s.value) * 100) + '%'));
+      legend.appendChild(item);
+    }
+    wrap.appendChild(legend);
+    return wrap;
+  }
+
   function injectPanel(loc, data, err) {
     styleTag();
     const old = document.getElementById(ROOT_ID);
@@ -198,16 +222,18 @@
       const grid = el('div', 'bb-grid');
       grid.appendChild(metric('Total', data.added, data.removed, { suffix: data.fileCount + ' file' + (data.fileCount === 1 ? '' : 's') }));
       grid.appendChild(metric('Test files', data.testAdded, data.testRemoved, { suffix: data.testFileCount + ' file' + (data.testFileCount === 1 ? '' : 's') }));
+      grid.appendChild(metric('Documentation', data.docAdded, data.docRemoved, { suffix: data.docFileCount + ' file' + (data.docFileCount === 1 ? '' : 's') }));
 
-      const cmt = metric('Comment lines', data.commentsAdded, data.commentsRemoved);
-      const codeAdd = data.added - data.commentsAdded;
-      const codeRem = data.removed - data.commentsRemoved;
-      const code = metric('Code (non-comment)', codeAdd, codeRem);
+      const cmt = metric('Comment lines', data.commentAdded, data.commentRemoved);
+      cmt.title = 'Comment lines outside test files';
+      const code = metric('Code', data.codeAdded, data.codeRemoved, { suffix: 'non-test / non-comment' });
 
       cmt.querySelector('.bb-lab').appendChild(el('span', 'bb-tag', '// # /* */'));
       grid.appendChild(cmt);
       grid.appendChild(code);
       root.appendChild(grid);
+
+      root.appendChild(barGraph(data));
 
       const details = el('details');
       details.appendChild(el('summary', '', 'Per-file breakdown (' + data.files.length + ')'));
@@ -225,6 +251,7 @@
         const tr = el('tr');
         const tdF = el('td', null, f.path);
         if (f.isTest) tdF.appendChild(el('span', 'bb-tag', 'TEST'));
+        else if (f.isDoc) tdF.appendChild(el('span', 'bb-tag bb-tag-doc', 'DOC'));
         [f.added, f.removed, f.commentsAdded, f.commentsRemoved].forEach((v, i) => {
           const td = el('td', 'bb-num ' + (i % 2 === 0 ? 'bb-add' : 'bb-del'), String(v));
           tr.appendChild(td);
@@ -247,6 +274,7 @@
   function rowLabel(f) {
     const parts = [];
     if (f.isTest) parts.push('test +' + f.added + ' −' + f.removed);
+    if (f.isDoc) parts.push('doc +' + f.added + ' −' + f.removed);
     if (f.commentsAdded || f.commentsRemoved) parts.push('cmt +' + f.commentsAdded + ' −' + f.commentsRemoved);
     return parts.length ? parts.join(' · ') : '';
   }
@@ -294,9 +322,9 @@
       chip.appendChild(document.createTextNode(' '));
       chip.appendChild(el('span', 'bb-del', '−' + r));
     };
-    part('test', data.testAdded, data.testRemoved);
+part('test', data.testAdded, data.testRemoved);
     chip.appendChild(document.createTextNode(' · '));
-    part('cmt', data.commentsAdded, data.commentsRemoved);
+    part('cmt', data.commentAdded, data.commentRemoved);
     return chip;
   }
 

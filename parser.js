@@ -2,9 +2,18 @@
   'use strict';
 
   var TEST_FILE_RE = /(^|\/)(__tests__|tests?|specs?)(\/|$)|\.(test|spec)\./i;
+  var DOC_EXT = { md: 1, markdown: 1, mdx: 1, rst: 1 };
 
   function isTestFile(path) {
     return TEST_FILE_RE.test(path || '');
+  }
+
+  function isDocFile(path) {
+    var p = path || '';
+    var base = p.split('/').pop().toLowerCase();
+    if (/^readme/.test(base)) return true;
+    var ext = base.split('.').pop();
+    return !!DOC_EXT[ext];
   }
 
   var GROUPS = {
@@ -122,6 +131,7 @@
         return;
       }
       cur.isTest = isTestFile(cur.path);
+      cur.isDoc = isDocFile(cur.path);
       files.push(cur);
       cur = null;
     }
@@ -181,9 +191,53 @@
     return files;
   }
 
+  function summarize(files) {
+    var out = {
+      fileCount: files.length,
+      testFileCount: 0,
+      docFileCount: 0,
+      added: 0,
+      removed: 0,
+      testAdded: 0,
+      testRemoved: 0,
+      docAdded: 0,
+      docRemoved: 0,
+      commentAdded: 0,
+      commentRemoved: 0,
+      testCommentAdded: 0,
+      testCommentRemoved: 0,
+      codeAdded: 0,
+      codeRemoved: 0
+    };
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      out.added += f.added;
+      out.removed += f.removed;
+      if (f.isTest) {
+        out.testFileCount++;
+        out.testAdded += f.added;
+        out.testRemoved += f.removed;
+        out.testCommentAdded += f.commentsAdded;
+        out.testCommentRemoved += f.commentsRemoved;
+      } else if (f.isDoc) {
+        out.docFileCount++;
+        out.docAdded += f.added;
+        out.docRemoved += f.removed;
+      } else {
+        out.commentAdded += f.commentsAdded;
+        out.commentRemoved += f.commentsRemoved;
+      }
+    }
+    out.codeAdded = out.added - out.testAdded - out.docAdded - out.commentAdded;
+    out.codeRemoved = out.removed - out.testRemoved - out.docRemoved - out.commentRemoved;
+    return out;
+  }
+
   var api = {
     parseDiff: parseDiff,
+    summarize: summarize,
     isTestFile: isTestFile,
+    isDocFile: isDocFile,
     classifyLine: classifyLine,
     DEFAULT_GROUP: DEFAULT_GROUP,
     GROUPS: GROUPS

@@ -22,12 +22,19 @@ for (const file of files) {
       removed: f.removed,
       commentsAdded: f.commentsAdded,
       commentsRemoved: f.commentsRemoved,
-      isTest: f.isTest
+      isTest: f.isTest,
+      isDoc: f.isDoc
     };
   }
 
-  const ok = JSON.stringify(got) === JSON.stringify(expected);
-  const expectedPaths = Object.keys(expected).sort().join(', ');
+  const summaryOk = expected.summary
+    ? JSON.stringify(parser.summarize(parsed)) === JSON.stringify(expected.summary)
+    : true;
+
+  const expectedFiles = {};
+  for (const k of Object.keys(expected)) if (k !== 'summary') expectedFiles[k] = expected[k];
+  const ok = JSON.stringify(got) === JSON.stringify(expectedFiles) && summaryOk;
+  const expectedPaths = Object.keys(expectedFiles).sort().join(', ');
   const gotPaths = Object.keys(got).sort().join(', ');
   if (ok) {
     console.log('PASS ' + file);
@@ -36,6 +43,11 @@ for (const file of files) {
     console.log('FAIL ' + file);
     console.log('  expected files: ' + expectedPaths);
     console.log('  got files:      ' + gotPaths);
+    if (!summaryOk) {
+      console.log('  summary mismatch');
+      console.log('    expected ' + JSON.stringify(expected.summary));
+      console.log('    got      ' + JSON.stringify(parser.summarize(parsed)));
+    }
     for (const p of Object.keys(expected)) {
       const e = expected[p];
       const g = got[p];
