@@ -16,7 +16,6 @@ On the PR diff page it renders:
 - A **summary card** at the top of the page with a Total + `Test` / `Documentation` / `Comment` / `Code` breakdown and a stacked bar showing the percentage of added lines per category.
 - An expandable **per-file table** with each file's `+/-`, comment `+/-`, and a `TEST`/`DOC` tag.
 - An inline **chip** next to Bitbucket's `+N -M` "Lines updated" summary.
-- Small **badges** on rows in the diff file list for test/doc/comment files.
 
 ## Install in Chrome
 
@@ -72,4 +71,3 @@ Reload the extension at `chrome://extensions` after editing content scripts.
 
 - Very large PRs may be truncated by Bitbucket's diff API.
 - Comment detection is heuristic (e.g. Python docstrings are treated as comments); it is good enough for rough PR stats, not a strict linter.
-- Per-file row badges rely on Bitbucket's `a[href="#chg-{path}"]` anchors in the diff file list.

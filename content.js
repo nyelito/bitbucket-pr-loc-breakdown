@@ -30,7 +30,6 @@
 #${ROOT_ID} .bb-tag{display:inline-block;font-size:10px;line-height:1;margin-left:6px;padding:2px 5px;border-radius:8px;background:#e0edfc;color:#0b57d0;font-weight:600;}
 #${ROOT_ID} .bb-tag-doc{background:#f5e2c8;color:#8a5606;}
 #${ROOT_ID} .bb-err{color:#c73a3a;}
-.bb-loc-badge{display:inline-block;margin-left:8px;font:600 10px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#33691e;background:#e8f5e9;border-radius:8px;padding:0 6px;white-space:nowrap;pointer-events:none;vertical-align:middle;}
 .bb-loc-inline{display:inline-block;margin-left:10px;font:600 11px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#4a5f7a;background:#fff;border:1px dashed #b3bfce;border-radius:10px;padding:1px 8px;white-space:nowrap;vertical-align:middle;}
 .bb-loc-inline .bb-add{color:#1b7f1b;}
 .bb-loc-inline .bb-del{color:#c73a3a;}
@@ -269,35 +268,11 @@
     else document.body.appendChild(root);
   }
 
-  // ---------- per-file row badges (best effort) ----------
-
-  function rowLabel(f) {
-    const parts = [];
-    if (f.isTest) parts.push('test +' + f.added + ' −' + f.removed);
-    if (f.isDoc) parts.push('doc +' + f.added + ' −' + f.removed);
-    if (f.commentsAdded || f.commentsRemoved) parts.push('cmt +' + f.commentsAdded + ' −' + f.commentsRemoved);
-    return parts.length ? parts.join(' · ') : '';
-  }
+  // ---------- PR-level inline chip (next to the +N −M summary) ----------
 
   function clearBadges() {
     for (const b of appendedBadges) if (b.parentNode) b.parentNode.removeChild(b);
     appendedBadges = [];
-  }
-
-  function rowsForFile(path) {
-    const target = '#chg-' + path;
-    const exact = [];
-    const lenient = [];
-    const anchors = document.querySelectorAll('a[href^="#chg-"]');
-    for (const a of anchors) {
-      const href = a.getAttribute('href') || '';
-      if (href === target) exact.push(a);
-      else {
-        const t = (a.textContent || '').trim();
-        if (t && t.length < 260 && t.includes(path.split('/').pop())) lenient.push(a);
-      }
-    }
-    return exact.length ? exact.slice(0, 1) : lenient.slice(0, 1);
   }
 
   function summaryClusters() {
@@ -329,20 +304,8 @@ part('test', data.testAdded, data.testRemoved);
   }
 
   function decorateRows(data) {
-    if (!data || !data.files || !isDiffPage()) return;
+    if (!data || !isDiffPage()) return;
     clearBadges();
-    for (const f of data.files) {
-      const label = rowLabel(f);
-      if (!label) continue;
-      const els = rowsForFile(f.path);
-      for (const rowEl of els) {
-        if (rowEl.dataset.bbLocked) continue;
-        rowEl.dataset.bbLocked = '1';
-        const badge = el('span', 'bb-loc-badge', label);
-        rowEl.appendChild(badge);
-        appendedBadges.push(badge);
-      }
-    }
     for (const cluster of summaryClusters()) {
       if (cluster.dataset.bbSummed) continue;
       cluster.dataset.bbSummed = '1';
