@@ -1,0 +1,31 @@
+name: Build extension zip
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build zip
+        run: |
+          rm -f realloc.zip
+          zip realloc.zip manifest.json content.js parser.js \
+            icons/16.png icons/48.png icons/128.png
+
+      - name: Commit zip
+        run: |
+          if git diff --quiet realloc.zip; then
+            echo "zip unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add realloc.zip
+          git commit -m "Build realloc.zip [skip ci]"
+          git push
