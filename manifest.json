@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Bitbucket PR LOC Breakdown",
-  "version": "0.1.0",
-  "description": "Breaks out added/removed lines in Bitbucket Cloud PRs: test files and comment lines shown separately.",
+  "name": "Realloc \u2014 PR LOC Breakdown",
+  "version": "0.2.0",
+  "description": "Breaks out added/removed lines in Bitbucket and GitHub PRs: test files, docs, comments, and code.",
   "minimum_chrome_version": "88",
   "icons": {
     "16": "icons/16.png",
@@ -11,10 +11,30 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://bitbucket.org/*/pull-requests/*"],
-      "js": ["parser.js", "content.js"],
+      "matches": [
+        "*://bitbucket.org/*/pull-requests/*",
+        "*://github.com/*/*/pull/*"
+      ],
+      "js": [
+        "src/languages.js",
+        "src/parser.js",
+        "src/cache.js",
+        "src/net.js",
+        "src/providers/bitbucket.js",
+        "src/providers/github.js",
+        "src/providers/index.js",
+        "src/ui.js",
+        "src/content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
-  "host_permissions": ["https://bitbucket.org/*"]
+  "host_permissions": [
+    "https://bitbucket.org/*",
+    "https://github.com/*",
+    "https://patch-diff.githubusercontent.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  }
 }

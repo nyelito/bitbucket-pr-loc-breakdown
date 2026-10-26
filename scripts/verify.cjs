@@ -2,7 +2,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const parser = require('../parser.js');
+const parser = require('../src/parser.js');
+const languages = require('../src/languages.js');
+const bitbucket = require('../src/providers/bitbucket.js');
+const github = require('../src/providers/github.js');
 
 const fixtureDir = path.join(__dirname, '..', 'fixtures');
 const files = fs.readdirSync(fixtureDir).filter((f) => f.endsWith('.diff')).sort();
@@ -63,8 +66,42 @@ for (const file of files) {
   }
 }
 
+const architectureChecks = [];
+function check(name, actual, expected) {
+  const ok = JSON.stringify(actual) === JSON.stringify(expected);
+  if (!ok) failed++;
+  console.log((ok ? 'PASS ' : 'FAIL ') + name + (ok ? '' : ' (expected ' + JSON.stringify(expected) + ', got ' + JSON.stringify(actual) + ')'));
+  architectureChecks.push(name);
+}
+
+const bbLoc = bitbucket.parseLocation('https://bitbucket.org/acme/android/pull-requests/7/files');
+check('bitbucket location', bbLoc && bbLoc.owner + '/' + bbLoc.repo + '#' + bbLoc.id, 'acme/android#7');
+check(
+  'bitbucket diff url',
+  bitbucket.diffUrl(bbLoc, 'https://bitbucket.org'),
+  'https://bitbucket.org/!api/2.0/repositories/acme/android/pullrequests/7/diff'
+);
+
+const ghLoc = github.parseLocation('https://github.com/acme/android/pull/7/files');
+check('github location', ghLoc && ghLoc.owner + '/' + ghLoc.repo + '#' + ghLoc.id, 'acme/android#7');
+check(
+  'github diff url',
+  github.diffUrl(ghLoc, 'https://github.com'),
+  'https://github.com/acme/android/pull/7.diff'
+);
+check('github files page', github.isDiffPage(ghLoc, 'https://github.com/acme/android/pull/7/files'), true);
+check('github conversation page', github.isDiffPage(ghLoc, 'https://github.com/acme/android/pull/7'), true);
+check('github commits page', github.isDiffPage(ghLoc, 'https://github.com/acme/android/pull/7/commits'), false);
+check('unknown host rejected', bitbucket.parseLocation('https://github.com/acme/android/pull/7'), null);
+
+check('kotlin gradle script language', languages.forPath('app/build.gradle.kts').id, 'kotlin');
+check('groovy gradle script language', languages.forPath('app/build.gradle').id, 'gradle');
+check('androidTest detected', parser.isTestFile('app/src/androidTest/java/com/example/MainActivityTest.kt'), true);
+check('java Test suffix detected', parser.isTestFile('app/src/test/java/com/example/CalculatorTest.java'), true);
+check('non-test Test substring rejected', parser.isTestFile('app/src/main/java/com/example/Contest.kt'), false);
+
 if (failed) {
-  console.log('\n' + failed + ' fixture(s) FAILED');
+  console.log('\n' + failed + ' check(s) FAILED');
   process.exit(1);
 }
-console.log('\nAll ' + files.length + ' fixtures PASSED');
+console.log('\nAll ' + files.length + ' fixtures and ' + architectureChecks.length + ' architecture checks PASSED');

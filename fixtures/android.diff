@@ -1,0 +1,84 @@
+diff --git a/app/src/main/java/com/example/MainActivity.kt b/app/src/main/java/com/example/MainActivity.kt
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/app/src/main/java/com/example/MainActivity.kt
+@@ -0,0 +1,14 @@
++package com.example
++
++import android.os.Bundle
++
++/* Activity entry point
++ * for the demo app.
++ */
++class MainActivity : AppCompatActivity() {
++    // Show the greeting
++    override fun onCreate(savedInstanceState: Bundle?) {
++        super.onCreate(savedInstanceState)
++        setContentView(R.layout.activity_main)
++    }
++}
+diff --git a/app/src/test/java/com/example/CalculatorTest.java b/app/src/test/java/com/example/CalculatorTest.java
+new file mode 100644
+index 0000000..2222222
+--- /dev/null
++++ b/app/src/test/java/com/example/CalculatorTest.java
+@@ -0,0 +1,9 @@
++package com.example;
++
++public class CalculatorTest {
++    // Verifies addition
++    @Test
++    public void adds() {
++        assertEquals(2, Calculator.add(1, 1));
++    }
++}
+diff --git a/app/src/androidTest/java/com/example/MainActivityTest.kt b/app/src/androidTest/java/com/example/MainActivityTest.kt
+new file mode 100644
+index 0000000..3333333
+--- /dev/null
++++ b/app/src/androidTest/java/com/example/MainActivityTest.kt
+@@ -0,0 +1,7 @@
++package com.example
++
++class MainActivityTest {
++    // Instrumented UI check
++    fun launches() {
++        assertEquals(true, true)
++    }
++}
+diff --git a/app/src/main/res/layout/activity_main.xml b/app/src/main/res/layout/activity_main.xml
+new file mode 100644
+index 0000000..4444444
+--- /dev/null
++++ b/app/src/main/res/layout/activity_main.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Simple layout -->
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
++    <!-- greeting text -->
++    <TextView android:id="@+id/greeting" />
++</LinearLayout>
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+new file mode 100644
+index 0000000..5555555
+--- /dev/null
++++ b/app/build.gradle.kts
+@@ -0,0 +1,8 @@
++plugins {
++    id("com.android.application")
++}
++
++// Android SDK level
++android {
++    compileSdk = 34
++}
+diff --git a/gradle.properties b/gradle.properties
+new file mode 100644
+index 0000000..6666666
+--- /dev/null
++++ b/gradle.properties
+@@ -0,0 +1,3 @@
++# Build settings
++org.gradle.jvmargs=-Xmx2048m
++android.useAndroidX=true

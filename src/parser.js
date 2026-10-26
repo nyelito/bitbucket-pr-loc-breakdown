@@ -1,49 +1,35 @@
 (function (global) {
   'use strict';
 
-  var TEST_FILE_RE = /(^|\/)(__tests__|tests?|specs?)(\/|$)|\.(test|spec)\./i;
-  var DOC_EXT = { md: 1, markdown: 1, mdx: 1, rst: 1 };
+  var languages = (typeof module !== 'undefined' && module.exports)
+    ? require('./languages.js')
+    : (global.Realloc && global.Realloc.languages);
+
+  if (!languages) throw new Error('Realloc language registry is not loaded');
+
+  var TEST_DIR_RE = /(^|\/)(__tests__|__mocks__|tests?|specs?|androidTest|testFixtures|integration[-_]?tests?|e2e)(\/|$)/i;
+  var TEST_NAME_RE = /[._-](test|tests|spec|specs)\.[^/]+$/i;
+  var TEST_CLASS_RE = /(?:^|\/)[A-Z][A-Za-z0-9_]*(?:Test|Tests|Spec|Specs)\.[A-Za-z0-9]+$/;
+  var DOC_EXT = {
+    md: 1, markdown: 1, mdx: 1, rst: 1, adoc: 1, asciidoc: 1, textile: 1
+  };
+  var DOC_BASENAME_RE = /^(readme|license|licence|changelog|contributing|code_of_conduct|authors|notice)(\..*)?$/;
 
   function isTestFile(path) {
-    return TEST_FILE_RE.test(path || '');
+    var p = path || '';
+    return TEST_DIR_RE.test(p) || TEST_NAME_RE.test(p) || TEST_CLASS_RE.test(p);
   }
 
   function isDocFile(path) {
     var p = path || '';
     var base = p.split('/').pop().toLowerCase();
-    if (/^readme/.test(base)) return true;
+    if (DOC_BASENAME_RE.test(base)) return true;
     var ext = base.split('.').pop();
     return !!DOC_EXT[ext];
   }
 
-  var GROUPS = {
-    cLike: { line: ['//'], block: [{ open: '/*', close: '*/' }] },
-    python: { line: ['#'], block: [{ open: '"""', close: '"""' }, { open: "'''", close: "'''" }] },
-    hash: { line: ['#'] },
-    sql: { line: ['--'] },
-    html: { line: [], block: [{ open: '<!--', close: '-->' }] }
-  };
-
-  var EXT_TO_GROUP = {
-    js: 'cLike', mjs: 'cLike', cjs: 'cLike', jsx: 'cLike', ts: 'cLike', tsx: 'cLike',
-    c: 'cLike', cc: 'cLike', cpp: 'cLike', h: 'cLike', hpp: 'cLike', cs: 'cLike',
-    java: 'cLike', go: 'cLike', rs: 'cLike', kt: 'cLike', swift: 'cLike',
-    scala: 'cLike', dart: 'cLike', php: 'cLike', m: 'cLike', mm: 'cLike',
-    css: 'cLike', scss: 'cLike', less: 'cLike', sass: 'cLike',
-    py: 'python', rb: 'hash', r: 'hash', pl: 'hash', pm: 'hash',
-    sh: 'hash', bash: 'hash', zsh: 'hash', ksh: 'hash',
-    yml: 'hash', yaml: 'hash', ini: 'hash', cfg: 'hash', toml: 'hash',
-    sql: 'sql',
-    html: 'html', htm: 'html', xml: 'html', xhtml: 'html', vue: 'html',
-    md: 'html', markdown: 'html', svg: 'html'
-  };
-
-  var DEFAULT_GROUP = { line: ['//', '#'], block: [{ open: '/*', close: '*/' }] };
-
   function tokensForPath(path) {
-    var ext = (path || '').split('.').pop().toLowerCase();
-    var g = EXT_TO_GROUP[ext];
-    return g ? GROUPS[g] : DEFAULT_GROUP;
+    return languages.forPath(path);
   }
 
   function classifyLine(code, tokens, state) {
@@ -132,6 +118,7 @@
       }
       cur.isTest = isTestFile(cur.path);
       cur.isDoc = isDocFile(cur.path);
+      cur.language = tokensForPath(cur.path).id;
       files.push(cur);
       cur = null;
     }
@@ -239,10 +226,12 @@
     isTestFile: isTestFile,
     isDocFile: isDocFile,
     classifyLine: classifyLine,
-    DEFAULT_GROUP: DEFAULT_GROUP,
-    GROUPS: GROUPS
+    tokensForPath: tokensForPath,
+    languages: languages
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  global.Realloc = global.Realloc || {};
+  global.Realloc.parser = api;
   global.BBLocParser = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

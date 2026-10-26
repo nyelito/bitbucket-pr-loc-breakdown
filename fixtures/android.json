@@ -1,0 +1,67 @@
+{
+  "app/src/main/java/com/example/MainActivity.kt": {
+    "added": 14,
+    "removed": 0,
+    "commentsAdded": 4,
+    "commentsRemoved": 0,
+    "isTest": false,
+    "isDoc": false
+  },
+  "app/src/test/java/com/example/CalculatorTest.java": {
+    "added": 9,
+    "removed": 0,
+    "commentsAdded": 1,
+    "commentsRemoved": 0,
+    "isTest": true,
+    "isDoc": false
+  },
+  "app/src/androidTest/java/com/example/MainActivityTest.kt": {
+    "added": 8,
+    "removed": 0,
+    "commentsAdded": 1,
+    "commentsRemoved": 0,
+    "isTest": true,
+    "isDoc": false
+  },
+  "app/src/main/res/layout/activity_main.xml": {
+    "added": 6,
+    "removed": 0,
+    "commentsAdded": 2,
+    "commentsRemoved": 0,
+    "isTest": false,
+    "isDoc": false
+  },
+  "app/build.gradle.kts": {
+    "added": 8,
+    "removed": 0,
+    "commentsAdded": 1,
+    "commentsRemoved": 0,
+    "isTest": false,
+    "isDoc": false
+  },
+  "gradle.properties": {
+    "added": 3,
+    "removed": 0,
+    "commentsAdded": 1,
+    "commentsRemoved": 0,
+    "isTest": false,
+    "isDoc": false
+  },
+  "summary": {
+    "fileCount": 6,
+    "testFileCount": 2,
+    "docFileCount": 0,
+    "added": 48,
+    "removed": 0,
+    "testAdded": 17,
+    "testRemoved": 0,
+    "docAdded": 0,
+    "docRemoved": 0,
+    "commentAdded": 8,
+    "commentRemoved": 0,
+    "testCommentAdded": 2,
+    "testCommentRemoved": 0,
+    "codeAdded": 23,
+    "codeRemoved": 0
+  }
+}
